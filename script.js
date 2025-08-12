@@ -1,159 +1,141 @@
-// QUESTÕES DE EXEMPLO. SUBSTITUA OU EXPANDA CONFORME QUISER.
-const QUESTIONS = [
-  {
-    id: 1,
-    text: 'VOCÊ PREFERE TOMAR DECISÕES BASEADO EM?',
-    options: [
-      { id: 'a', text: 'INTUIÇÃO E SENTIMENTO', score: { mystic: 2, logical: 0 } },
-      { id: 'b', text: 'ANÁLISE RACIONAL', score: { mystic: 0, logical: 2 } },
-      { id: 'c', text: 'UM MEIO-TERMO', score: { mystic: 1, logical: 1 } }
-    ]
-  },
-  {
-    id: 2,
-    text: 'EM UMA SALA ESCURA, O QUE VOCÊ FAZ?',
-    options: [
-      { id: 'a', text: 'SIGO A INTUIÇÃO', score: { mystic: 2, logical: 0 } },
-      { id: 'b', text: 'PROCURO UMA LUZ', score: { mystic: 0, logical: 2 } },
-      { id: 'c', text: 'PARO E OBSERVO', score: { mystic: 1, logical: 1 } }
-    ]
-  },
-  {
-    id: 3,
-    text: 'QUAL DESSES TE ATRAI MAIS?',
-    options: [
-      { id: 'a', text: 'SONHOS E SÍMBOLOS', score: { mystic: 2, logical: 0 } },
-      { id: 'b', text: 'FATOS CONCRETOS', score: { mystic: 0, logical: 2 } },
-      { id: 'c', text: 'CONEXÕES ENTRE AMBOS', score: { mystic: 1, logical: 1 } }
-    ]
-  }
+const perguntas = [
+    {
+        enunciado: "Você prefere trabalhar com:",
+        alternativas: [
+            { texto: "Pessoas e comunicação", pontuacao: "humanas" },
+            { texto: "Números e cálculos", pontuacao: "exatas" },
+            { texto: "Experimentos e descobertas", pontuacao: "biologicas" }
+        ]
+    },
+    {
+        enunciado: "Qual tipo de ambiente você prefere?",
+        alternativas: [
+            { texto: "Sala de aula ou escritório", pontuacao: "humanas" },
+            { texto: "Laboratório ou oficina", pontuacao: "biologicas" },
+            { texto: "Ambiente corporativo", pontuacao: "exatas" }
+        ]
+    },
+    {
+        enunciado: "O que mais te motiva?",
+        alternativas: [
+            { texto: "Ajudar outras pessoas", pontuacao: "humanas" },
+            { texto: "Resolver problemas complexos", pontuacao: "exatas" },
+            { texto: "Descobrir como as coisas funcionam", pontuacao: "biologicas" }
+        ]
+    },
+    {
+        enunciado: "Qual matéria você mais gosta?",
+        alternativas: [
+            { texto: "História ou Geografia", pontuacao: "humanas" },
+            { texto: "Matemática ou Física", pontuacao: "exatas" },
+            { texto: "Biologia ou Química", pontuacao: "biologicas" }
+        ]
+    },
+    {
+        enunciado: "Qual habilidade você mais se identifica?",
+        alternativas: [
+            { texto: "Comunicar ideias com clareza", pontuacao: "humanas" },
+            { texto: "Pensar logicamente", pontuacao: "exatas" },
+            { texto: "Observar e analisar", pontuacao: "biologicas" }
+        ]
+    },
+    {
+        enunciado: "Se pudesse escolher, seu trabalho ideal seria:",
+        alternativas: [
+            { texto: "Inspirar e ensinar pessoas", pontuacao: "humanas" },
+            { texto: "Construir e projetar soluções", pontuacao: "exatas" },
+            { texto: "Pesquisar e experimentar", pontuacao: "biologicas" }
+        ]
+    },
+    {
+        enunciado: "Qual dessas qualidades mais combina com você?",
+        alternativas: [
+            { texto: "Empatia e liderança", pontuacao: "humanas" },
+            { texto: "Organização e precisão", pontuacao: "exatas" },
+            { texto: "Curiosidade e paciência", pontuacao: "biologicas" }
+        ]
+    },
+    {
+        enunciado: "No tempo livre, você prefere:",
+        alternativas: [
+            { texto: "Ler sobre comportamento humano", pontuacao: "humanas" },
+            { texto: "Resolver quebra-cabeças e enigmas", pontuacao: "exatas" },
+            { texto: "Explorar a natureza", pontuacao: "biologicas" }
+        ]
+    }
 ];
 
-// ESTADO
-let answers = {};
-let current = 0;
+const resultados = {
+    humanas: {
+        titulo: "Você tem perfil para Ciências Humanas",
+        descricao: "Seu interesse por pessoas, culturas e comunicação mostra que você tem grande potencial para áreas como Psicologia, Jornalismo, Direito, História e Sociologia."
+    },
+    exatas: {
+        titulo: "Você tem perfil para Ciências Exatas",
+        descricao: "Sua habilidade lógica e raciocínio estruturado indicam afinidade com Engenharia, Matemática, Física, Análise de Sistemas e áreas relacionadas."
+    },
+    biologicas: {
+        titulo: "Você tem perfil para Ciências Biológicas",
+        descricao: "Seu interesse por descobertas e pela natureza mostra que você pode se destacar em Biologia, Química, Medicina, Biomedicina ou Veterinária."
+    },
+    misto: {
+        titulo: "Você tem um perfil multidisciplinar",
+        descricao: "Você apresenta interesses equilibrados entre diferentes áreas, podendo atuar em profissões que combinem mais de uma área do conhecimento."
+    }
+};
 
-// ELEMENTOS
-const questionEl = document.getElementById('question');
-const optionsEl = document.getElementById('options');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const progressBar = document.getElementById('progress-bar');
-const resultSection = document.getElementById('result');
-const quizSection = document.getElementById('quiz');
-const resultText = document.getElementById('result-text');
-const restartBtn = document.getElementById('restartBtn');
+let pontuacoes = {
+    humanas: 0,
+    exatas: 0,
+    biologicas: 0
+};
 
-function renderQuestion() {
-  const q = QUESTIONS[current];
-  questionEl.textContent = q.text;
-  optionsEl.innerHTML = '';
+let indicePergunta = 0;
 
-  q.options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.type = 'button';
-    btn.setAttribute('data-opt', opt.id);
-    btn.setAttribute('aria-pressed', 'false');
-    btn.innerHTML = `<div>${opt.text}</div>`;
-    btn.addEventListener('click', () => selectOption(opt.id));
-
-    // Restaurar seleção se já respondida
-    if (answers[q.id] === opt.id) {
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
+function mostrarPergunta() {
+    if (indicePergunta >= perguntas.length) {
+        mostrarResultado();
+        return;
     }
 
-    optionsEl.appendChild(btn);
-  });
-
-  prevBtn.disabled = current === 0;
-  nextBtn.textContent = current === QUESTIONS.length - 1 ? 'VER RESULTADO' : 'PRÓXIMA';
-  updateProgress();
+    const perguntaAtual = perguntas[indicePergunta];
+    const container = document.getElementById("quiz");
+    container.innerHTML = `
+        <h2>${perguntaAtual.enunciado}</h2>
+        <div class="opcoes">
+            ${perguntaAtual.alternativas.map((alt, index) =>
+                `<button onclick="responder('${alt.pontuacao}')">${alt.texto}</button>`
+            ).join("")}
+        </div>
+    `;
 }
 
-function selectOption(optId) {
-  const q = QUESTIONS[current];
-  answers[q.id] = optId;
+function responder(area) {
+    pontuacoes[area]++;
+    indicePergunta++;
+    mostrarPergunta();
+}
 
-  // Visual
-  Array.from(optionsEl.children).forEach(btn => {
-    if (btn.getAttribute('data-opt') === optId) {
-      btn.classList.add('selected');
-      btn.setAttribute('aria-pressed', 'true');
-    } else {
-      btn.classList.remove('selected');
-      btn.setAttribute('aria-pressed', 'false');
+function mostrarResultado() {
+    const container = document.getElementById("quiz");
+
+    const maiorPontuacao = Object.entries(pontuacoes).reduce((a, b) => a[1] > b[1] ? a : b);
+    let chaveResultado = maiorPontuacao[0];
+
+    // Se houver empate
+    const valores = Object.values(pontuacoes);
+    const maximo = Math.max(...valores);
+    const empate = valores.filter(v => v === maximo).length > 1;
+
+    if (empate) {
+        chaveResultado = "misto";
     }
-  });
+
+    const resultado = resultados[chaveResultado];
+    container.innerHTML = `
+        <h2>${resultado.titulo}</h2>
+        <p>${resultado.descricao}</p>
+    `;
 }
 
-prevBtn.addEventListener('click', () => {
-  if (current > 0) {
-    current--;
-    renderQuestion();
-  }
-});
-
-nextBtn.addEventListener('click', () => {
-  const q = QUESTIONS[current];
-  if (!answers[q.id]) {
-    // Pequena animação para indicar que precisa responder
-    optionsEl.animate(
-      [{ transform: 'translateY(0)' }, { transform: 'translateY(-6px)' }, { transform: 'translateY(0)' }],
-      { duration: 240 }
-    );
-    return;
-  }
-
-  if (current < QUESTIONS.length - 1) {
-    current++;
-    renderQuestion();
-  } else {
-    showResult();
-  }
-});
-
-function updateProgress() {
-  const pct = Math.round(((current + 1) / QUESTIONS.length) * 100);
-  progressBar.style.width = pct + '%';
-}
-
-function showResult() {
-  let total = { mystic: 0, logical: 0 };
-
-  QUESTIONS.forEach(q => {
-    const sel = answers[q.id];
-    const option = q.options.find(o => o.id === sel);
-    if (option && option.score) {
-      total.mystic += option.score.mystic || 0;
-      total.logical += option.score.logical || 0;
-    }
-  });
-
-  let verdict = '';
-  if (total.mystic > total.logical) {
-    verdict = 'VOCÊ TEM UMA ALMA INTUITIVA E SENSÍVEL — O ORÁCULO RECOMENDA CONFIAR NOS SINAIS.';
-  } else if (total.logical > total.mystic) {
-    verdict = 'VOCÊ É ANALÍTICO E PRÁTICO — O ORÁCULO VÊ CLAREZA E FOCO EM SUA MENTE.';
-  } else {
-    verdict = 'HÁ UM EQUILÍBRIO ENTRE RAZÃO E INTUIÇÃO — VOCÊ NAVEGA BEM ENTRE OS DOIS MUNDOS.';
-  }
-
-  quizSection.classList.add('hidden');
-  resultSection.classList.remove('hidden');
-  resultSection.setAttribute('aria-hidden', 'false');
-  resultText.textContent = verdict;
-}
-
-restartBtn.addEventListener('click', () => {
-  answers = {};
-  current = 0;
-  resultSection.classList.add('hidden');
-  quizSection.classList.remove('hidden');
-  quizSection.setAttribute('aria-hidden', 'false');
-  renderQuestion();
-});
-
-// INICIALIZA
-renderQuestion();
+mostrarPergunta();
